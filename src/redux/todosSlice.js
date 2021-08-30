@@ -2,7 +2,9 @@ import {createSlice, createEntityAdapter} from "@reduxjs/toolkit";
 
 const todosAdapter = createEntityAdapter();
 
-const initialState = todosAdapter.getInitialState({deletedTodos: []})
+const initialState = todosAdapter.getInitialState({
+    deletedTodos: []
+})
 
 export const {
     selectTotal : todosCount,
@@ -15,9 +17,17 @@ const todosSlice = createSlice({
     reducers: {
         addTodo: todosAdapter.addOne,
         addTodos: todosAdapter.addMany,
-        deleteTodo: todosAdapter.removeOne,
+        deleteTodo(state,action) {
+            state.deletedTodos.push(state.entities[action.payload]); // for add it To Deleted Todos List
+            todosAdapter.removeOne(state,action);
+        },
         clearTodos: todosAdapter.removeAll,
         updateTodo: todosAdapter.updateOne,
+        restoreTodo(state,action) {
+            todosAdapter.addOne(state,action); // for add it again to Todos
+            state.deletedTodos = state.deletedTodos.filter( (item) => 
+                item.id !== action.payload.id) // for remove todo from Deleted Todos List
+        }
     }
 });
 
@@ -26,7 +36,8 @@ export const {
     addTodos,
     deleteTodo,
     clearTodos,
-    updateTodo
+    updateTodo,
+    restoreTodo,
 } = todosSlice.actions;
 
 export default todosSlice.reducer;
